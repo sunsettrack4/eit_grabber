@@ -81,21 +81,27 @@ while True:
 
                             # P7S1 - WORKAROUND FOR MISSING NEWLINES (dvbtee bug)
                             def return_actors(sub, type):
+                                actors = []
                                 le = None
                                 sub_text = ""
                                 replace_text = ""
+                                space_counter = 0
                                 for n, k in enumerate(sub[::-1]):
+                                    if k == " ":
+                                        space_counter =+ 1
                                     if not le:
                                         le = k
                                         continue
-                                    if (le.isupper() and (k.islower() or k.isnumeric() or k in ["!", "?", "."])):
+                                    if (le.isupper() and (k.islower() or k.isnumeric() or k in ["!", "?", "."])) and space_counter >= 1:
                                         new_text = sub[::-1][:n][::-1].replace(replace_text, "")
                                         sub_text = sub_text + ("\n" if sub_text != "" else "") + new_text.replace(sub_text.replace("\n", ""), "")
+                                        actors.insert(0, new_text)
                                         replace_text = new_text + replace_text
+                                        space_counter = 0
                                     le = k
-                                if sub_text == "":
-                                    sub_text = sub
-                                return desc.split(type)[0] + "\n\n" + type + "\n" + sub_text
+                                new_text = sub[::-1][:n+1][::-1].replace(replace_text, "")
+                                actors.insert(0, new_text)
+                                return desc.split(type)[0] + "\n\n" + type + "\n" + "\n".join(actors)
 
                             if l["serviceId"] in [61300, 61301, 61302, 61303, 61304, 61305, 61322, 61323, 61324, 61325]:
                                 desc = desc.replace("sixx", "SIXX")
@@ -106,12 +112,12 @@ while True:
                                             le = k
                                             continue
                                         if (k.isupper()) and (le.islower() or le.isnumeric() or le in ["!", "?", "."]):
-                                            desc = desc[:n] + "\n" + desc[n:]
+                                            desc = desc[:n] + "\n\n" + desc[n:]
                                             break
                                         le = k
 
                                 if "Regie: " in desc:
-                                    desc = desc.split("Regie: ")[0] + "\n\n" + "Regie: " + desc.split("Regie: ")[1] + " "
+                                    desc = desc.split("Regie: ")[0] + ("\n" if desc.split("Regie: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Regie: " + desc.split("Regie: ")[1] + " "
                                 if "Drehbuch: " in desc:
                                     desc = desc.split("Drehbuch: ")[0] + ("\n" if desc.split("Drehbuch: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Drehbuch: " + desc.split("Drehbuch: ")[1] + " "
                                 if "Autor: " in desc:
@@ -122,6 +128,10 @@ while True:
                                     desc = desc.split("Kamera: ")[0] + ("\n" if desc.split("Kamera: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Kamera: " + desc.split("Kamera: ")[1] + " "
                                 if "Schnitt: " in desc:
                                     desc = desc.split("Schnitt: ")[0] + ("\n" if desc.split("Schnitt: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Schnitt: " + desc.split("Schnitt: ")[1] + " "
+                                if "Animation: " in desc:
+                                    desc = desc.split("Animation: ")[0] + ("\n" if desc.split("Animation: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Animation: " + desc.split("Animation: ")[1] + " "
+                                if "Gastgeber: " in desc:
+                                    desc = desc.split("Gastgeber: ")[0] + ("\n" if desc.split("Gastgeber: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Gastgeber: " + desc.split("Gastgeber: ")[1] + " "
                                 if "Darsteller:" in desc and desc.split("Darsteller:")[1][0] != " ":
                                     if ")" in desc.split("Darsteller:")[1]:
                                         desc = desc.split("Darsteller:")[0] + "\n\n" + "Darsteller:\n" + ")\n".join(desc.split("Darsteller:")[1].split(")"))
