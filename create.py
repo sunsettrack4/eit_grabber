@@ -34,7 +34,7 @@ while True:
 
         with open(f"{os.getcwd()}/scan-files/{i}", "rb") as file:
             for line_b in file:
-                line = line_b.replace(b'\xc2\x8a', b' --- ').decode()
+                line = line_b.replace(b'\xc2\x8a', b' --- ').decode()  # ARD - WORKAROUND
                 
                 if "[EIT]::store" in line:
                     l = line.split("[EIT]::store: ")[1].encode()
@@ -46,6 +46,26 @@ while True:
                             if d["descriptorTag"] == 77:
                                 name = d["name"].replace('\\"', "")
                                 text = d["text"].replace('\\"', "")
+
+                                # P7S1 - WORKAROUND FOR MISSING NEWLINES (dvbtee bug)
+                                if l["serviceId"] in [61300, 61301, 61302, 61303, 61304, 61305, 61322, 61323, 61324, 61325]:          
+                                    if "Altersfreigabe: " in text:
+                                        text = text.split("Altersfreigabe: ")[0] + "\n" + "Altersfreigabe: " + text.split("Altersfreigabe: ")[1]
+                                    if "(WH vom" in text:
+                                        text = text.split("(WH vom")[0] + "\n" + "(WH vom" + text.split("(WH vom")[1]                      
+                                    
+                                    sub = text.split("\n")[0]
+                                    le = None
+                                    for n, k in enumerate(sub[::-1]):
+                                        if not le:
+                                            le = k
+                                            continue
+                                        if (le.isupper()) and (k.islower() or k.isnumeric() or k in ["!", "?", "."]):
+                                            new_text = sub[::-1][n:][::-1] + "\n" + sub[::-1][:n][::-1]
+                                            text = new_text + "\n" + "\n".join(text.split("\n")[1:])
+                                            break
+                                        le = k
+                                    
                                 c.execute("""INSERT OR REPLACE INTO {} """
                                         """(ts_id, service_id, event_id, broadcast_id, start, end, name, text, desc, table_id)"""
                                         """VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""".format(f"pre_{i.replace('_final', '')}"),
@@ -55,9 +75,60 @@ while True:
                                 desc = desc + d["text"]
                         
                         if desc != "":
-                            desc = desc.replace(" --- ", "\n")
-                            desc = desc.replace("<ul><li>", "* ").replace("</li></ul>", "").replace("</li><li>", "\n* ")
+                            desc = desc.replace(" --- ", "\n")  # ARD - WORKAROUND
+                            desc = desc.replace("<ul><li>", "* ").replace("</li></ul>", "").replace("</li><li>", "\n* ")  # ARD - WORKAROUND
                             desc = desc.replace('\\"', '"')
+
+                            # P7S1 - WORKAROUND FOR MISSING NEWLINES (dvbtee bug)
+                            def return_actors(sub, type):
+                                le = None
+                                sub_text = ""
+                                replace_text = ""
+                                for n, k in enumerate(sub[::-1]):
+                                    if not le:
+                                        le = k
+                                        continue
+                                    if (le.isupper() and (k.islower() or k.isnumeric() or k in ["!", "?", "."])):
+                                        new_text = sub[::-1][:n][::-1].replace(replace_text, "")
+                                        sub_text = sub_text + ("\n" if sub_text != "" else "") + new_text.replace(sub_text.replace("\n", ""), "")
+                                        replace_text = new_text + replace_text
+                                    le = k
+                                if sub_text == "":
+                                    sub_text = sub
+                                return desc.split(type)[0] + "\n\n" + type + "\n" + sub_text
+
+                            if l["serviceId"] in [61300, 61301, 61302, 61303, 61304, 61305, 61322, 61323, 61324, 61325]:
+                                desc = desc.replace("sixx", "SIXX")
+                                if len(desc) >= 12 and "Moderation: " in desc[0:12]:
+                                    le = None
+                                    for n, k in enumerate(desc):
+                                        if not le:
+                                            le = k
+                                            continue
+                                        if (k.isupper()) and (le.islower() or le.isnumeric() or le in ["!", "?", "."]):
+                                            desc = desc[:n] + "\n" + desc[n:]
+                                            break
+                                        le = k
+
+                                if "Regie: " in desc:
+                                    desc = desc.split("Regie: ")[0] + "\n\n" + "Regie: " + desc.split("Regie: ")[1] + " "
+                                if "Drehbuch: " in desc:
+                                    desc = desc.split("Drehbuch: ")[0] + ("\n" if desc.split("Drehbuch: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Drehbuch: " + desc.split("Drehbuch: ")[1] + " "
+                                if "Autor: " in desc:
+                                    desc = desc.split("Autor: ")[0] + ("\n" if desc.split("Autor: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Autor: " + desc.split("Autor: ")[1] + " "
+                                if "Komponist: " in desc:
+                                    desc = desc.split("Komponist: ")[0] + ("\n" if desc.split("Komponist: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Komponist: " + desc.split("Komponist: ")[1] + " "
+                                if "Kamera: " in desc:
+                                    desc = desc.split("Kamera: ")[0] + ("\n" if desc.split("Kamera: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Kamera: " + desc.split("Kamera: ")[1] + " "
+                                if "Schnitt: " in desc:
+                                    desc = desc.split("Schnitt: ")[0] + ("\n" if desc.split("Schnitt: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Schnitt: " + desc.split("Schnitt: ")[1] + " "
+                                if "Darsteller:" in desc and desc.split("Darsteller:")[1][0] != " ":
+                                    if ")" in desc.split("Darsteller:")[1]:
+                                        desc = desc.split("Darsteller:")[0] + "\n\n" + "Darsteller:\n" + ")\n".join(desc.split("Darsteller:")[1].split(")"))
+                                    else:
+                                        desc = return_actors(desc.split("Darsteller:")[1], "Darsteller:")
+                                if "Mitwirkende:" in desc and desc.split("Mitwirkende:")[1][0] != " ":
+                                    desc = return_actors(desc.split("Mitwirkende:")[1], "Mitwirkende:")
                             
                             c.execute("""UPDATE pre_{} SET desc = ? WHERE broadcast_id = ?""".format(i.replace('_final', '', )), (str(desc), str(l["serviceId"])+"_"+str(e["eventId"])))    
                             conn.commit()
