@@ -232,7 +232,7 @@ def manage_dvbtee_scan():
             
         while True:
         
-            d.set_background_title(f"EIT STREAM SERVICE MANAGEMENT > DVBTEE > MANAGE > {f[tag].replace(".sh", "").upper()}")
+            d.set_background_title(f"EIT STREAM SERVICE MANAGEMENT > DVBTEE > MANAGE > {f[tag].replace('.sh', '').upper()}")
         
             code, tag_2 = d.menu("Please select an option:",
                                 choices=[("(1)", "Stop service" if status_values[tag] == 0 else "Start service"),
@@ -251,10 +251,10 @@ def manage_dvbtee_scan():
             elif tag_2 == "(2)":
                 os.system("clear")
                 os.system(f'systemctl status eitscan-{f[tag].replace(".sh", "")}')
-                input("Press any key to continue...")
+                input("Press enter to continue...")
 
             elif tag_2 == "(3)":
-                d.set_background_title(f"EIT STREAM SERVICE MANAGEMENT > DVBTEE > MANAGE > {f[tag].replace(".sh", "").upper()} > EDIT")
+                d.set_background_title(f"EIT STREAM SERVICE MANAGEMENT > DVBTEE > MANAGE > {f[tag].replace('.sh', '').upper()} > EDIT")
                 
                 # SCAN DURATION
                 while True:
@@ -300,9 +300,9 @@ def manage_dvbtee_scan():
                 break
 
             elif tag_2 == "(4)":
-                d.set_background_title(f"EIT STREAM SERVICE MANAGEMENT > DVBTEE > MANAGE > {f[tag].replace(".sh", "").upper()} > REMOVE")
+                d.set_background_title(f"EIT STREAM SERVICE MANAGEMENT > DVBTEE > MANAGE > {f[tag].replace('.sh', '').upper()} > REMOVE")
                 os.system(f'systemctl stop eitscan-{f[tag].replace(".sh", "")}')
-                os.system(f"rm /lib/systemd/system/eitscan-{f[tag].replace(".sh", "")}.service")
+                os.system(f"rm /lib/systemd/system/eitscan-{f[tag].replace('.sh', '')}.service")
                 os.system(f"rm {os.getcwd()}/scan-scripts/{f[tag]}")
                 os.system("systemctl daemon-reload")
                 service_removed = True
@@ -361,7 +361,7 @@ def manage_grabber():
         elif tag_1 == "(2)":
             os.system("clear")
             os.system(f'systemctl status eit-xmltv-grabber')
-            input("Press any key to continue...")
+            input("Press enter to continue...")
 
         elif tag_1 == "(3)":
             d.set_background_title(f"EIT STREAM SERVICE MANAGEMENT > XMLTV GRABBER > MANAGE > REMOVE")
