@@ -132,6 +132,10 @@ while True:
                                     desc = desc.split("Animation: ")[0] + ("\n" if desc.split("Animation: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Animation: " + desc.split("Animation: ")[1] + " "
                                 if "Gastgeber: " in desc:
                                     desc = desc.split("Gastgeber: ")[0] + ("\n" if desc.split("Gastgeber: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Gastgeber: " + desc.split("Gastgeber: ")[1] + " "
+                                if "Kommentar: " in desc:
+                                    desc = desc.split("Kommentar: ")[0] + ("\n" if desc.split("Kommentar: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Kommentar: " + desc.split("Kommentar: ")[1] + " "
+                                if "Experte: " in desc:
+                                    desc = desc.split("Experte: ")[0] + ("\n" if desc.split("Experte: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Experte: " + desc.split("Experte: ")[1] + " "
                                 if "Darsteller:" in desc and desc.split("Darsteller:")[1][0] != " ":
                                     if ")" in desc.split("Darsteller:")[1]:
                                         desc = desc.split("Darsteller:")[0] + "\n\n" + "Darsteller:\n" + ")\n".join(desc.split("Darsteller:")[1].split(")"))
