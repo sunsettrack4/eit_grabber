@@ -105,6 +105,7 @@ while True:
 
                             if l["serviceId"] in [61300, 61301, 61302, 61303, 61304, 61305, 61322, 61323, 61324, 61325]:
                                 desc = desc.replace("sixx", "SIXX")
+                                
                                 if len(desc) >= 12 and "Moderation: " in desc[0:12]:
                                     le = None
                                     for n, k in enumerate(desc):
@@ -116,26 +117,12 @@ while True:
                                             break
                                         le = k
 
-                                if "Regie: " in desc:
-                                    desc = desc.split("Regie: ")[0] + ("\n" if desc.split("Regie: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Regie: " + desc.split("Regie: ")[1] + " "
-                                if "Drehbuch: " in desc:
-                                    desc = desc.split("Drehbuch: ")[0] + ("\n" if desc.split("Drehbuch: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Drehbuch: " + desc.split("Drehbuch: ")[1] + " "
-                                if "Autor: " in desc:
-                                    desc = desc.split("Autor: ")[0] + ("\n" if desc.split("Autor: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Autor: " + desc.split("Autor: ")[1] + " "
-                                if "Komponist: " in desc:
-                                    desc = desc.split("Komponist: ")[0] + ("\n" if desc.split("Komponist: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Komponist: " + desc.split("Komponist: ")[1] + " "
-                                if "Kamera: " in desc:
-                                    desc = desc.split("Kamera: ")[0] + ("\n" if desc.split("Kamera: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Kamera: " + desc.split("Kamera: ")[1] + " "
-                                if "Schnitt: " in desc:
-                                    desc = desc.split("Schnitt: ")[0] + ("\n" if desc.split("Schnitt: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Schnitt: " + desc.split("Schnitt: ")[1] + " "
-                                if "Animation: " in desc:
-                                    desc = desc.split("Animation: ")[0] + ("\n" if desc.split("Animation: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Animation: " + desc.split("Animation: ")[1] + " "
-                                if "Gastgeber: " in desc:
-                                    desc = desc.split("Gastgeber: ")[0] + ("\n" if desc.split("Gastgeber: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Gastgeber: " + desc.split("Gastgeber: ")[1] + " "
-                                if "Kommentar: " in desc:
-                                    desc = desc.split("Kommentar: ")[0] + ("\n" if desc.split("Kommentar: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Kommentar: " + desc.split("Kommentar: ")[1] + " "
-                                if "Experte: " in desc:
-                                    desc = desc.split("Experte: ")[0] + ("\n" if desc.split("Experte: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + "Experte: " + desc.split("Experte: ")[1] + " "
+                                elements = ["Regie", "Drehbuch", "Autor", "Komponist", "Kamera", "Schnitt", "Animation", "Gastgeber", "Kommentar", "Experte"]
+
+                                for el in elements:
+                                    if f"{el}: " in desc:
+                                        desc = desc.split(f"{el}: ")[0] + ("\n" if desc.split(f"{el}: ")[0][-1] not in [" ", ".", "?", "!"] else "\n\n") + f"{el}: " + desc.split(f"{el}: ")[1] + " "
+                                
                                 if "Darsteller:" in desc and desc.split("Darsteller:")[1][0] != " ":
                                     if ")" in desc.split("Darsteller:")[1]:
                                         desc = desc.split("Darsteller:")[0] + "\n\n" + "Darsteller:\n" + ")\n".join(desc.split("Darsteller:")[1].split(")"))
@@ -143,6 +130,8 @@ while True:
                                         desc = return_actors(desc.split("Darsteller:")[1], "Darsteller:")
                                 if "Mitwirkende:" in desc and desc.split("Mitwirkende:")[1][0] != " ":
                                     desc = return_actors(desc.split("Mitwirkende:")[1], "Mitwirkende:")
+                                
+                                desc = desc.replace("SIXX", "sixx")
                             
                             c.execute("""UPDATE pre_{} SET desc = ? WHERE broadcast_id = ?""".format(i.replace('_final', '', )), (str(desc), str(l["serviceId"])+"_"+str(e["eventId"])))    
                             conn.commit()
